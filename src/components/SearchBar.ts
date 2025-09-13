@@ -1,6 +1,6 @@
 export class SearchBar {
   private container: HTMLElement;
-  private searchInput: HTMLInputElement;
+  private searchInput!: HTMLInputElement;
   private onSearch: (query: string) => void;
 
   constructor(onSearchCallback: (query: string) => void) {

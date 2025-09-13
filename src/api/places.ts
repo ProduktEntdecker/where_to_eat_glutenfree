@@ -36,7 +36,7 @@ const mockRestaurants: Restaurant[] = [
 
 export async function searchRestaurants(
   query: string,
-  location?: { lat: number; lng: number }
+  location?: { lat: number; lng: number } | null
 ): Promise<Restaurant[]> {
   // Simulate API delay
   await new Promise(resolve => setTimeout(resolve, 1000));
