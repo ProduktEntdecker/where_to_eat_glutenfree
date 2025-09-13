@@ -1,6 +1,6 @@
 import { Restaurant } from '../types';
 
-// Mock data for demonstration
+// Mock data fallback for development
 const mockRestaurants: Restaurant[] = [
   {
     id: '1',
@@ -34,14 +34,146 @@ const mockRestaurants: Restaurant[] = [
   }
 ];
 
+// Google Places API configuration
+const GOOGLE_API_KEY = import.meta.env.VITE_GOOGLE_PLACES_API_KEY;
+const SEARCH_RADIUS = import.meta.env.VITE_SEARCH_RADIUS || 5000; // 5km default
+
+// Keywords that indicate gluten-free options
+const GLUTEN_FREE_KEYWORDS = [
+  'gluten free',
+  'gluten-free',
+  'celiac',
+  'coeliac',
+  'gf menu',
+  'gf options',
+  'gluten free menu',
+  'gluten free options'
+];
+
+function calculateDistance(
+  lat1: number, lon1: number, 
+  lat2: number, lon2: number
+): number {
+  const R = 6371; // Earth's radius in km
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = 
+    Math.sin(dLat/2) * Math.sin(dLat/2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLon/2) * Math.sin(dLon/2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  return R * c;
+}
+
+async function searchGooglePlaces(
+  location: { lat: number; lng: number },
+  keyword: string = ''
+): Promise<any[]> {
+  const baseUrl = 'https://maps.googleapis.com/maps/api/place/nearbysearch/json';
+  
+  // Build search query focusing on gluten-free restaurants
+  const searchQuery = keyword 
+    ? `${keyword} gluten free restaurant`
+    : 'gluten free restaurant';
+  
+  const params = new URLSearchParams({
+    key: GOOGLE_API_KEY,
+    location: `${location.lat},${location.lng}`,
+    radius: SEARCH_RADIUS.toString(),
+    keyword: searchQuery,
+    type: 'restaurant'
+  });
+
+  try {
+    // Note: Direct API calls from browser will face CORS issues
+    // In production, you'd need a backend proxy or use Google's JS SDK
+    const response = await fetch(`${baseUrl}?${params}`);
+    const data = await response.json();
+    
+    if (data.status === 'OK') {
+      return data.results;
+    } else {
+      console.error('Google Places API error:', data.status);
+      return [];
+    }
+  } catch (error) {
+    console.error('Failed to fetch from Google Places:', error);
+    return [];
+  }
+}
+
+async function searchWithGooglePlacesSDK(
+  location: { lat: number; lng: number },
+  keyword: string = ''
+): Promise<Restaurant[]> {
+  // Check if Google Maps is loaded
+  if (!window.google?.maps?.places) {
+    console.warn('Google Maps not loaded, using mock data');
+    return mockRestaurants;
+  }
+
+  return new Promise((resolve) => {
+    const service = new google.maps.places.PlacesService(
+      document.createElement('div')
+    );
+
+    const request = {
+      location: new google.maps.LatLng(location.lat, location.lng),
+      radius: SEARCH_RADIUS,
+      type: 'restaurant',
+      keyword: keyword ? `${keyword} gluten free` : 'gluten free'
+    };
+
+    service.nearbySearch(request, (results, status) => {
+      if (status === google.maps.places.PlacesServiceStatus.OK && results) {
+        const restaurants: Restaurant[] = results.map(place => ({
+          id: place.place_id || '',
+          name: place.name || '',
+          address: place.vicinity || '',
+          rating: place.rating || 0,
+          priceLevel: place.price_level || 0,
+          openNow: place.opening_hours?.open_now,
+          distance: location ? calculateDistance(
+            location.lat, location.lng,
+            place.geometry?.location?.lat() || 0,
+            place.geometry?.location?.lng() || 0
+          ) : undefined,
+          glutenFreeOptions: ['Check with restaurant for GF options'],
+          phone: place.formatted_phone_number,
+          website: place.website,
+          photos: place.photos?.map(photo => photo.getUrl({ maxWidth: 400 }))
+        }));
+        
+        resolve(restaurants);
+      } else {
+        console.error('Places search failed:', status);
+        resolve(mockRestaurants);
+      }
+    });
+  });
+}
+
 export async function searchRestaurants(
   query: string,
-  _location?: { lat: number; lng: number } | null
+  location?: { lat: number; lng: number } | null
 ): Promise<Restaurant[]> {
-  // Simulate API delay
-  await new Promise(resolve => setTimeout(resolve, 1000));
-  
-  // Filter mock data based on query
+  // If no API key, return mock data
+  if (!GOOGLE_API_KEY) {
+    console.warn('No Google API key found, using mock data');
+    return mockRestaurants;
+  }
+
+  // If location is available, search for real restaurants
+  if (location) {
+    try {
+      return await searchWithGooglePlacesSDK(location, query);
+    } catch (error) {
+      console.error('Error searching restaurants:', error);
+      return mockRestaurants;
+    }
+  }
+
+  // No location available, return filtered mock data
   const filtered = mockRestaurants.filter(restaurant =>
     restaurant.name.toLowerCase().includes(query.toLowerCase()) ||
     restaurant.glutenFreeOptions.some(option => 

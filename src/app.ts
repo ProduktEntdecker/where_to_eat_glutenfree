@@ -4,6 +4,7 @@ import { LoadingSpinner } from './components/LoadingSpinner';
 import { EmptyState } from './components/EmptyState';
 import { getCurrentLocation } from './services/geolocation';
 import { searchRestaurants } from './api/places';
+import { loadGoogleMapsAPI } from './utils/loadGoogleMaps';
 import { Restaurant } from './types';
 
 export class GlutenFreeFinderApp {
@@ -23,6 +24,17 @@ export class GlutenFreeFinderApp {
   private async init() {
     console.log('App initializing...');
     this.render();
+    
+    // Load Google Maps API if API key is available
+    if (import.meta.env.VITE_GOOGLE_PLACES_API_KEY) {
+      try {
+        await loadGoogleMapsAPI();
+        console.log('Google Maps API loaded successfully');
+      } catch (error) {
+        console.warn('Google Maps API failed to load, using mock data', error);
+      }
+    }
+    
     await this.requestLocation(); 
     // Load initial restaurants
     this.handleSearch('');
