@@ -23,7 +23,7 @@ export class GlutenFreeFinderApp {
   private async init() {
     console.log('App initializing...');
     this.render();
-    await this.requestLocation();
+    await this.requestLocation(); 
     // Load initial restaurants
     this.handleSearch('');
   }
@@ -34,6 +34,9 @@ export class GlutenFreeFinderApp {
       console.error('App element not found');
       return;
     }
+
+    // Clear any existing content
+    app.innerHTML = '';
 
     app.innerHTML = `
       <div class="min-h-screen bg-gray-50">
