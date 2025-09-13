@@ -3,3 +3,4 @@
 +import { Loader2 } from 'lucide';
 
  export class LoadingSpinner {
+ }
