@@ -11,7 +11,7 @@ export class GlutenFreeFinderApp {
   private loadingSpinner: LoadingSpinner;
   private emptyState: EmptyState;
   private restaurants: Restaurant[] = [];
-  private userLocation: { lat: number; lng: number } | null = null;
+  private userLocation: { lat: number; lng: number } | undefined = undefined;
 
   constructor() {
     this.searchBar = new SearchBar(this.handleSearch.bind(this));
@@ -134,14 +134,17 @@ export class GlutenFreeFinderApp {
   private async requestLocation(): Promise<void> {
     try {
       console.log('Requesting location...');
-      this.userLocation = await getCurrentLocation();
-      if (this.userLocation) {
+      const location = await getCurrentLocation();
+      if (location) {
+        this.userLocation = location;
         console.log('Location obtained:', this.userLocation);
       } else {
+        this.userLocation = undefined;
         console.log('Location not available');
       }
     } catch (error) {
       console.error('Location error:', error);
+      this.userLocation = undefined;
     }
   }
 }
