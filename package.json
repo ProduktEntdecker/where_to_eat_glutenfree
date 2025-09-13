@@ -1,0 +1,31 @@
+{
+  "name": "gluten-free-restaurant-finder",
+  "version": "1.0.0",
+  "description": "Mobile web app for finding gluten-free restaurants",
+  "main": "index.html",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "lucide": "^0.263.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.5.0",
+    "@types/google.maps": "^3.53.5",
+    "autoprefixer": "^10.4.15",
+    "postcss": "^8.4.28",
+    "tailwindcss": "^3.3.3",
+    "typescript": "^5.1.6",
+    "vite": "^4.4.9"
+  },
+  "keywords": [
+    "gluten-free",
+    "restaurants",
+    "mobile",
+    "travel",
+    "pwa"
+  ]
+}
