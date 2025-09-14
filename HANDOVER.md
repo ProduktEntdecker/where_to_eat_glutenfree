@@ -47,7 +47,7 @@ https://github.com/ProduktEntdecker/where_to_eat_glutenfree/pull/1
 
 ## Repository Information
 
-- **Repository URL:** https://github.com/ProduktEntdecker/where_to_eat_glutenfree.git
+- **Repository URL:** <https://github.com/ProduktEntdecker/where_to_eat_glutenfree.git>
 - **Current Branch:** main
 - **Last Commit:** 0d9f6cb - 🔄 Session wrap-up: 2025-09-14 15:24 (Dr. Florian Steiner, 21 seconds ago)
 

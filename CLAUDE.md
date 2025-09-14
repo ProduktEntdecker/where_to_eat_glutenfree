@@ -46,7 +46,7 @@ The app uses a custom vanilla TypeScript component system where each component:
 
 ## File Structure
 
-```
+```text
 src/
 ├── api/places.ts         # Restaurant search API (currently mock data)
 ├── services/geolocation.ts # Browser geolocation wrapper
