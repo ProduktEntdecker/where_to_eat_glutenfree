@@ -1,0 +1,29 @@
+# Title: Summary, imperative, start upper case, don't end with a period
+# No more than 50 chars. #### 50 chars is here:  #
+
+# Remember blank line between title and body.
+
+# Body: Explain *what* and *why* (not *how*). Include task ID (Jira issue).
+# Wrap at 72 chars. ################################## which is here:  #
+
+
+# At the end: Include Co-authored-by for all contributors.
+# Include any breaking changes and migration notes.
+# Include links to related PRs, issues, or documentation.
+
+# Example:
+# Add user authentication with OAuth2
+#
+# Implement secure login system to protect user data and comply with
+# privacy requirements. Uses industry-standard OAuth2 flow with PKCE.
+#
+# Breaking change: Users must re-login after this update.
+#
+# Closes #123
+# Related: #124, #125
+#
+# Co-Authored-By: Name <email@example.com>
+
+🤖 Generated with [Claude Code](https://claude.ai/code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>
