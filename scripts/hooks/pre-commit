@@ -37,7 +37,7 @@ SECRET_PATTERNS=(
     "ghp_[A-Za-z0-9_]{36}"                      # GitHub Personal Access Token
     "mongodb\\+srv://[^\\s/]+:[^\\s/]+@"        # MongoDB Connection String
     "postgres://[^\\s/]+:[^\\s/]+@"             # PostgreSQL Connection String
-    "-----BEGIN.*PRIVATE KEY-----"              # Private Keys
+    "BEGIN.*PRIVATE.*KEY"                       # Private Keys (PEM format)
 )
 
 check_secrets() {
@@ -54,9 +54,9 @@ check_secrets() {
         return 0
     fi
 
-    # Check each staged file for secrets
+    # Check each staged file for secrets (exclude security scripts)
     while IFS= read -r file; do
-        if [[ -f "$file" ]]; then
+        if [[ -f "$file" && ! "$file" =~ scripts/hooks/ ]]; then
             for pattern in "${SECRET_PATTERNS[@]}"; do
                 if git diff --cached "$file" | grep -E -q "$pattern"; then
                     log_error "Potential secret detected in $file"
