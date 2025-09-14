@@ -124,4 +124,4 @@ sed -i 's/\x1b\[[0-9;]*m//g' filename.md
 
 - [Project Security Policy](../SECURITY.md)
 - [Git Commit Guidelines](../.gitmessage)
-- [NPM Security Best Practices](<https://docs.npmjs.com/security-best-practices)>
+- [NPM Security Best Practices](<https://docs.npmjs.com/security-best-practices>)

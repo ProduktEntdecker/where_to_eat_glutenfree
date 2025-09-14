@@ -27,7 +27,7 @@ Just deploy and it works!
 
 ### Option B: Add Google Places API (Optional)
 
-1. Go to [Google Cloud Console](<https://console.cloud.google.com/)>
+1. Go to [Google Cloud Console](<https://console.cloud.google.com/>)
 2. Create a new project or select an existing one
 3. Enable these APIs:
    - **Places API**
@@ -116,9 +116,5 @@ Feel free to submit issues and pull requests!
 
 MIT
 
-
 ---
-Last updated: 2025-09-14 15:24:30
-
----
-*Last Updated: 2025-09-15 00:53:09*
+Last updated: 2025-09-15 00:53:09

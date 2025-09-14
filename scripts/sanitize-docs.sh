@@ -1,7 +1,8 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Documentation Sanitizer
 # Removes ANSI escape codes and cleans up generated documentation
+# Usage: ./sanitize-docs.sh
 
 set -euo pipefail
 

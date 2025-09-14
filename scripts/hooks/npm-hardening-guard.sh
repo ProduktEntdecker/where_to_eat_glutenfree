@@ -1,7 +1,8 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # NPM Security Hardening Guard
 # Prevents installation of compromised packages and validates security
+# Usage: ./npm-hardening-guard.sh
 
 set -euo pipefail
 

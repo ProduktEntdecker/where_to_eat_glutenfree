@@ -1,7 +1,8 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Pre-commit security guard
 # Prevents committing secrets, runs security checks
+# Usage: ./pre-commit (automatically called by git)
 
 set -euo pipefail
 

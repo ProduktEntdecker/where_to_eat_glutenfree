@@ -134,10 +134,11 @@ If the security scripts incorrectly flag legitimate code:
 
 ## Resources
 
-- [OWASP Top 10](https://owasp.org/www-project-top-ten/)
-- [NPM Security Best Practices](https://docs.npmjs.com/security-best-practices)
-- [GitHub Security Features](https://github.com/features/security)
-- [Snyk Vulnerability Database](https://snyk.io/vuln/)
+- [OWASP Top 10](<https://owasp.org/www-project-top-ten/>)
+- [NPM Security Best Practices](<https://docs.npmjs.com/security-best-practices>)
+- [GitHub Security Features](<https://github.com/features/security>)
+- [Snyk Vulnerability Database](<https://snyk.io/vuln/>)
+
 
 ---
 
