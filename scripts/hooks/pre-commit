@@ -58,7 +58,7 @@ check_secrets() {
     while IFS= read -r file; do
         if [[ -f "$file" ]]; then
             for pattern in "${SECRET_PATTERNS[@]}"; do
-                if git diff --cached "$file" | grep -qE "$pattern"; then
+                if git diff --cached "$file" | grep -E -q "$pattern"; then
                     log_error "Potential secret detected in $file"
                     log_error "Pattern matched: $pattern"
                     exit_code=1
