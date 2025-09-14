@@ -74,12 +74,6 @@ export async function searchOpenStreetMap(
       .map((element: any) => {
         const tags = element.tags || {};
         
-        // Determine if explicitly gluten-free
-        const hasGlutenFree = 
-          tags['diet:gluten_free'] === 'yes' ||
-          tags['gluten_free'] === 'yes' ||
-          tags['diet:gluten_free'] === 'only';
-        
         // Build gluten-free options description
         const glutenFreeOptions: string[] = [];
         if (tags['diet:gluten_free'] === 'yes') {

@@ -39,18 +39,6 @@ const mockRestaurants: Restaurant[] = [
 const GOOGLE_API_KEY = import.meta.env.VITE_GOOGLE_PLACES_API_KEY;
 const SEARCH_RADIUS = import.meta.env.VITE_SEARCH_RADIUS || 5000; // 5km default
 
-// Keywords that indicate gluten-free options
-const GLUTEN_FREE_KEYWORDS = [
-  'gluten free',
-  'gluten-free',
-  'celiac',
-  'coeliac',
-  'gf menu',
-  'gf options',
-  'gluten free menu',
-  'gluten free options'
-];
-
 function calculateDistance(
   lat1: number, lon1: number, 
   lat2: number, lon2: number
