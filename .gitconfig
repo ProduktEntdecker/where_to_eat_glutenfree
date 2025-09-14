@@ -1,0 +1,48 @@
+# Project-specific git configuration
+# Run: git config --local include.path ../.gitconfig
+
+[pull]
+    rebase = true
+
+[merge]
+    ff = false
+
+[rebase]
+    autoStash = true
+
+[core]
+    autocrlf = input
+    filemode = true
+
+[branch]
+    autosetupmerge = always
+    autosetuprebase = always
+
+[push]
+    default = simple
+    followTags = true
+
+[commit]
+    template = .gitmessage
+
+[alias]
+    # Safe operations
+    co = checkout
+    br = branch
+    st = status
+    ci = commit
+    unstage = reset HEAD --
+    last = log -1 HEAD
+    visual = !gitk
+
+    # Enhanced operations
+    lg = log --oneline --graph --decorate --all
+    amend = commit --amend --no-edit
+    undo = reset --soft HEAD~1
+
+    # Security-focused operations
+    secure-commit = "!f() { ./scripts/hooks/pre-commit && git commit \"$@\"; }; f"
+    audit = "!./scripts/hooks/npm-hardening-guard.sh"
+
+    # Documentation operations
+    clean-docs = "!./scripts/sanitize-docs.sh"
