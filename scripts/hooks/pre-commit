@@ -37,7 +37,7 @@ SECRET_PATTERNS=(
     "ghp_[A-Za-z0-9_]{36}"                      # GitHub Personal Access Token
     "mongodb\\+srv://[^\\s/]+:[^\\s/]+@"        # MongoDB Connection String
     "postgres://[^\\s/]+:[^\\s/]+@"             # PostgreSQL Connection String
-    "-----BEGIN [A-Z]\\+ PRIVATE KEY-----"        # Private Keys
+    "-----BEGIN.*PRIVATE KEY-----"              # Private Keys
 )
 
 check_secrets() {
