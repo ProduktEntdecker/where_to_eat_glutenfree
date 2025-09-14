@@ -2,6 +2,7 @@ export class SearchBar {
   private container: HTMLElement;
   private searchInput!: HTMLInputElement;
   private onSearch: (query: string) => void;
+  private debounceTimer: number | null = null;
 
   constructor(onSearchCallback: (query: string) => void) {
     this.onSearch = onSearchCallback;
@@ -36,10 +37,19 @@ export class SearchBar {
     return container;
   }
 
+  private debounce(func: () => void, delay: number): void {
+    if (this.debounceTimer) {
+      clearTimeout(this.debounceTimer);
+    }
+    this.debounceTimer = setTimeout(func, delay);
+  }
+
   private setupEventListeners(): void {
     this.searchInput.addEventListener('input', (e) => {
       const target = e.target as HTMLInputElement;
-      this.onSearch(target.value);
+      this.debounce(() => {
+        this.onSearch(target.value);
+      }, 500);
     });
 
     this.searchInput.addEventListener('keypress', (e) => {
