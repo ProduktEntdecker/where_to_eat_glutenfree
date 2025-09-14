@@ -1,4 +1,5 @@
 import { Restaurant } from '../types';
+import { searchOpenStreetMap } from './openstreetmap';
 
 // Mock data fallback for development
 const mockRestaurants: Restaurant[] = [
@@ -157,23 +158,29 @@ export async function searchRestaurants(
   query: string,
   location?: { lat: number; lng: number } | null
 ): Promise<Restaurant[]> {
-  // If no API key, return mock data
-  if (!GOOGLE_API_KEY) {
-    console.warn('No Google API key found, using mock data');
-    return mockRestaurants;
-  }
-
-  // If location is available, search for real restaurants
+  // If location is available, try OpenStreetMap first (FREE, no API key needed!)
   if (location) {
     try {
-      return await searchWithGooglePlacesSDK(location, query);
+      console.log('Searching with OpenStreetMap (free, no API key needed)...');
+      const osmResults = await searchOpenStreetMap(location, 5); // 5km radius
+      if (osmResults.length > 0) {
+        return osmResults;
+      }
     } catch (error) {
-      console.error('Error searching restaurants:', error);
-      return mockRestaurants;
+      console.warn('OpenStreetMap search failed, trying Google Places...', error);
+    }
+    
+    // Fallback to Google Places if API key is available
+    if (GOOGLE_API_KEY) {
+      try {
+        return await searchWithGooglePlacesSDK(location, query);
+      } catch (error) {
+        console.error('Google Places search failed:', error);
+      }
     }
   }
 
-  // No location available, return filtered mock data
+  // No location or all APIs failed, return filtered mock data
   const filtered = mockRestaurants.filter(restaurant =>
     restaurant.name.toLowerCase().includes(query.toLowerCase()) ||
     restaurant.glutenFreeOptions.some(option => 

@@ -11,11 +11,21 @@ https://produktentdecker-whe-3t3e.bolt.host
 - ⭐ Restaurant ratings and reviews
 - 📱 Works on all devices (iPhone, iPad, MacBook)
 - 💾 Installable as a PWA
-- 🌍 Real-time Google Places data
+- 🌍 **FREE OpenStreetMap data (no API key needed!)**
+- 🔄 Optional Google Places integration
 
 ## 🚀 Setup Instructions
 
-### 1. Get a Google Places API Key
+### Option A: Use FREE OpenStreetMap (Recommended!)
+**No API key needed!** The app now uses OpenStreetMap by default, which is:
+- ✅ Completely free
+- ✅ No registration required
+- ✅ No billing surprises
+- ✅ Good restaurant data with dietary tags
+
+Just deploy and it works!
+
+### Option B: Add Google Places API (Optional)
 
 1. Go to [Google Cloud Console](https://console.cloud.google.com/)
 2. Create a new project or select an existing one
