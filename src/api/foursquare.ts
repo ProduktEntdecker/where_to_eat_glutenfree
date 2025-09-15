@@ -103,10 +103,14 @@ export async function searchFoursquare(
           glutenFreeOptions.push('Check with restaurant for gluten-free options');
         }
 
-        const distance = calculateDistance(
-          location.lat, location.lng,
-          place.location.lat, place.location.lng
-        );
+        // Foursquare v3 API uses geocodes.main for coordinates
+        const placeCoords = place.geocodes?.main || place.location;
+        const distance = placeCoords?.latitude && placeCoords?.longitude
+          ? calculateDistance(
+              location.lat, location.lng,
+              placeCoords.latitude, placeCoords.longitude
+            )
+          : place.distance ? place.distance / 1000 : undefined; // Convert meters to km if provided
 
         return {
           id: place.fsq_id,
@@ -116,7 +120,7 @@ export async function searchFoursquare(
           rating: place.rating ? place.rating / 2 : 0, // Foursquare uses 10-point scale
           priceLevel: place.price || 0,
           openNow: place.hours?.open_now,
-          distance: Math.round(distance * 10) / 10,
+          distance: distance ? Math.round(distance * 10) / 10 : undefined,
           glutenFreeOptions,
           phone: place.tel,
           website: place.website,

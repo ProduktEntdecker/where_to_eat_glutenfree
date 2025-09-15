@@ -1,7 +1,7 @@
 import { Restaurant } from '../types';
 import { searchOpenStreetMap } from './openstreetmap';
 import { searchFoursquare } from './foursquare';
-import { searchYelp } from './yelp';
+// import { searchYelp } from './yelp'; // Disabled - requires backend proxy
 
 // Mock data fallback for development
 const mockRestaurants: Restaurant[] = [
@@ -64,14 +64,15 @@ export async function searchRestaurants(
         })
     );
 
-    // Try Yelp (great for reviews mentioning GF)
-    searchPromises.push(
-      searchYelp(location, query || 'gluten free', 5000)
-        .catch(err => {
-          console.warn('Yelp search failed:', err);
-          return [];
-        })
-    );
+    // Yelp API disabled - requires backend proxy due to CORS
+    // Uncomment when backend proxy is implemented
+    // searchPromises.push(
+    //   searchYelp(location, query || 'gluten free', 5000)
+    //     .catch(err => {
+    //       console.warn('Yelp search failed:', err);
+    //       return [];
+    //     })
+    // );
 
     // Also try OpenStreetMap (completely free, no limits)
     searchPromises.push(

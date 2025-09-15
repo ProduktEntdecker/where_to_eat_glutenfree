@@ -4,6 +4,10 @@ import { Restaurant } from '../types';
  * Yelp Fusion API Integration
  * Free tier: 5,000 calls/day
  * Has gluten_free_friendly attribute and searchable reviews
+ *
+ * IMPORTANT: Yelp API requires a backend proxy due to CORS restrictions.
+ * This code is provided as a reference implementation.
+ * In production, calls should be made from a backend server.
  */
 
 const YELP_API_KEY = import.meta.env.VITE_YELP_API_KEY || '';
@@ -47,8 +51,9 @@ export async function searchYelp(
   });
 
   try {
-    // Note: Yelp API requires a backend proxy to avoid CORS issues
-    // This is the direct API call that would work from a backend
+    // IMPORTANT: This direct API call will fail due to CORS.
+    // Implement a backend proxy endpoint that makes this call server-side.
+    // Example: fetch('/api/yelp/search?${params}')
     const response = await fetch(`${YELP_API_URL}?${params}`, {
       headers: {
         'Authorization': `Bearer ${YELP_API_KEY}`,
@@ -82,48 +87,8 @@ export async function searchYelp(
           glutenFreeOptions.push('Listed as gluten-free restaurant');
         }
 
-        // Get detailed info with reviews mentioning gluten-free
-        try {
-          const reviewsResponse = await fetch(
-            `https://api.yelp.com/v3/businesses/${business.id}/reviews`,
-            {
-              headers: {
-                'Authorization': `Bearer ${YELP_API_KEY}`,
-                'Accept': 'application/json'
-              }
-            }
-          );
-
-          if (reviewsResponse.ok) {
-            const reviewsData = await reviewsResponse.json();
-            const gfReviews = reviewsData.reviews.filter((review: any) =>
-              review.text.toLowerCase().includes('gluten')
-            );
-
-            if (gfReviews.length > 0) {
-              glutenFreeOptions.push(`${gfReviews.length} reviews mention gluten-free`);
-
-              // Extract specific mentions from reviews
-              const mentions = new Set<string>();
-              gfReviews.forEach((review: any) => {
-                const text = review.text.toLowerCase();
-                if (text.includes('dedicated gluten') || text.includes('separate fryer')) {
-                  mentions.add('Dedicated GF preparation');
-                }
-                if (text.includes('gf menu') || text.includes('gluten free menu')) {
-                  mentions.add('GF menu available');
-                }
-                if (text.includes('celiac safe') || text.includes('celiac friendly')) {
-                  mentions.add('Celiac safe');
-                }
-              });
-
-              mentions.forEach(mention => glutenFreeOptions.push(mention));
-            }
-          }
-        } catch (err) {
-          console.warn('Failed to fetch reviews:', err);
-        }
+        // Note: Review fetching removed to conserve API quota
+        // Reviews should be fetched on-demand when user views details
 
         if (glutenFreeOptions.length === 0) {
           glutenFreeOptions.push('Contact restaurant for gluten-free options');

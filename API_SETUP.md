@@ -19,14 +19,16 @@ This app uses **completely free APIs** to find validated gluten-free restaurants
   3. Copy your API key
   4. Add to `.env` file: `VITE_FOURSQUARE_API_KEY=your_key_here`
 
-### 3. Yelp Fusion API (Optional)
+### 3. Yelp Fusion API (Requires Backend)
 - **Cost**: Free tier includes 5,000 calls/day
 - **Best for**: Restaurant reviews mentioning gluten-free
+- **⚠️ CORS Limitation**: Yelp API blocks browser requests. Requires backend proxy.
 - **Setup**:
   1. Sign up at https://www.yelp.com/developers
   2. Create an app
   3. Copy your API key
-  4. Add to `.env` file: `VITE_YELP_API_KEY=your_key_here`
+  4. Implement backend proxy endpoint to make Yelp API calls
+  5. Update `src/api/yelp.ts` to call your proxy instead
 
 ## Why These APIs?
 
