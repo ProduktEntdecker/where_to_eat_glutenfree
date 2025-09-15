@@ -1,5 +1,7 @@
 import { Restaurant } from '../types';
 import { searchOpenStreetMap } from './openstreetmap';
+import { searchFoursquare } from './foursquare';
+import { searchYelp } from './yelp';
 
 // Mock data fallback for development
 const mockRestaurants: Restaurant[] = [
@@ -35,146 +37,129 @@ const mockRestaurants: Restaurant[] = [
   }
 ];
 
-// Google Places API configuration
-const GOOGLE_API_KEY = import.meta.env.VITE_GOOGLE_PLACES_API_KEY;
-const SEARCH_RADIUS = import.meta.env.VITE_SEARCH_RADIUS || 5000; // 5km default
-
-function calculateDistance(
-  lat1: number, lon1: number, 
-  lat2: number, lon2: number
-): number {
-  const R = 6371; // Earth's radius in km
-  const dLat = (lat2 - lat1) * Math.PI / 180;
-  const dLon = (lon2 - lon1) * Math.PI / 180;
-  const a = 
-    Math.sin(dLat/2) * Math.sin(dLat/2) +
-    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-    Math.sin(dLon/2) * Math.sin(dLon/2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-  return R * c;
-}
-
-async function searchGooglePlaces(
-  location: { lat: number; lng: number },
-  keyword: string = ''
-): Promise<any[]> {
-  const baseUrl = 'https://maps.googleapis.com/maps/api/place/nearbysearch/json';
-  
-  // Build search query focusing on gluten-free restaurants
-  const searchQuery = keyword 
-    ? `${keyword} gluten free restaurant`
-    : 'gluten free restaurant';
-  
-  const params = new URLSearchParams({
-    key: GOOGLE_API_KEY,
-    location: `${location.lat},${location.lng}`,
-    radius: SEARCH_RADIUS.toString(),
-    keyword: searchQuery,
-    type: 'restaurant'
-  });
-
-  try {
-    // Note: Direct API calls from browser will face CORS issues
-    // In production, you'd need a backend proxy or use Google's JS SDK
-    const response = await fetch(`${baseUrl}?${params}`);
-    const data = await response.json();
-    
-    if (data.status === 'OK') {
-      return data.results;
-    } else {
-      console.error('Google Places API error:', data.status);
-      return [];
-    }
-  } catch (error) {
-    console.error('Failed to fetch from Google Places:', error);
-    return [];
-  }
-}
-
-async function searchWithGooglePlacesSDK(
-  location: { lat: number; lng: number },
-  keyword: string = ''
-): Promise<Restaurant[]> {
-  // Check if Google Maps is loaded
-  if (!window.google?.maps?.places) {
-    console.warn('Google Maps not loaded, using mock data');
-    return mockRestaurants;
-  }
-
-  return new Promise((resolve) => {
-    const service = new google.maps.places.PlacesService(
-      document.createElement('div')
-    );
-
-    const request = {
-      location: new google.maps.LatLng(location.lat, location.lng),
-      radius: SEARCH_RADIUS,
-      type: 'restaurant',
-      keyword: keyword ? `${keyword} gluten free` : 'gluten free'
-    };
-
-    service.nearbySearch(request, (results, status) => {
-      if (status === google.maps.places.PlacesServiceStatus.OK && results) {
-        const restaurants: Restaurant[] = results.map(place => ({
-          id: place.place_id || '',
-          name: place.name || '',
-          address: place.vicinity || '',
-          rating: place.rating || 0,
-          priceLevel: place.price_level || 0,
-          openNow: place.opening_hours?.open_now,
-          distance: location ? calculateDistance(
-            location.lat, location.lng,
-            place.geometry?.location?.lat() || 0,
-            place.geometry?.location?.lng() || 0
-          ) : undefined,
-          glutenFreeOptions: ['Check with restaurant for GF options'],
-          phone: place.formatted_phone_number,
-          website: place.website,
-          photos: place.photos?.map(photo => photo.getUrl({ maxWidth: 400 }))
-        }));
-        
-        resolve(restaurants);
-      } else {
-        console.error('Places search failed:', status);
-        resolve(mockRestaurants);
-      }
-    });
-  });
-}
-
+/**
+ * Search for gluten-free restaurants using multiple free APIs
+ * Priority order:
+ * 1. Foursquare (has GF categories) - Free up to 100k calls/month
+ * 2. Yelp (has GF reviews) - Free up to 5k calls/day
+ * 3. OpenStreetMap (completely free, no limits)
+ * 4. Mock data (fallback)
+ */
 export async function searchRestaurants(
   query: string,
   location?: { lat: number; lng: number } | null
 ): Promise<Restaurant[]> {
-  // If location is available, try OpenStreetMap first (FREE, no API key needed!)
+
+  const results: Restaurant[] = [];
+  const searchPromises: Promise<Restaurant[]>[] = [];
+
+  // If location is available, search with location-based APIs
   if (location) {
-    try {
-      console.log('Searching with OpenStreetMap (free, no API key needed)...');
-      const osmResults = await searchOpenStreetMap(location, 5); // 5km radius
-      if (osmResults.length > 0) {
-        return osmResults;
+    // Try Foursquare first (best for GF-specific data)
+    searchPromises.push(
+      searchFoursquare(location, query || 'gluten free', 5000)
+        .catch(err => {
+          console.warn('Foursquare search failed:', err);
+          return [];
+        })
+    );
+
+    // Try Yelp (great for reviews mentioning GF)
+    searchPromises.push(
+      searchYelp(location, query || 'gluten free', 5000)
+        .catch(err => {
+          console.warn('Yelp search failed:', err);
+          return [];
+        })
+    );
+
+    // Also try OpenStreetMap (completely free, no limits)
+    searchPromises.push(
+      searchOpenStreetMap(location, 5)
+        .catch(err => {
+          console.warn('OpenStreetMap search failed:', err);
+          return [];
+        })
+    );
+
+    // Wait for all searches to complete
+    const allResults = await Promise.all(searchPromises);
+
+    // Combine and deduplicate results
+    const combinedResults = new Map<string, Restaurant>();
+
+    for (const apiResults of allResults) {
+      for (const restaurant of apiResults) {
+        // Use name + address as key for deduplication
+        const key = `${restaurant.name.toLowerCase()}_${restaurant.address.toLowerCase()}`;
+
+        // Prefer results with better GF validation
+        const existing = combinedResults.get(key);
+        if (!existing ||
+            (restaurant.glutenFreeOptions.some(opt =>
+              opt.includes('Certified') || opt.includes('Dedicated')
+            ) && !existing.glutenFreeOptions.some(opt =>
+              opt.includes('Certified') || opt.includes('Dedicated')
+            ))) {
+          combinedResults.set(key, restaurant);
+        }
       }
-    } catch (error) {
-      console.warn('OpenStreetMap search failed, trying Google Places...', error);
     }
-    
-    // Fallback to Google Places if API key is available
-    if (GOOGLE_API_KEY) {
-      try {
-        return await searchWithGooglePlacesSDK(location, query);
-      } catch (error) {
-        console.error('Google Places search failed:', error);
-      }
-    }
+
+    results.push(...combinedResults.values());
   }
 
-  // No location or all APIs failed, return filtered mock data
-  const filtered = mockRestaurants.filter(restaurant =>
-    restaurant.name.toLowerCase().includes(query.toLowerCase()) ||
-    restaurant.glutenFreeOptions.some(option => 
-      option.toLowerCase().includes(query.toLowerCase())
-    )
-  );
-  
-  return query ? filtered : mockRestaurants;
+  // If no results from APIs, use mock data
+  if (results.length === 0) {
+    const filtered = mockRestaurants.filter(restaurant =>
+      !query ||
+      restaurant.name.toLowerCase().includes(query.toLowerCase()) ||
+      restaurant.glutenFreeOptions.some(option =>
+        option.toLowerCase().includes(query.toLowerCase())
+      )
+    );
+
+    return query ? filtered : mockRestaurants;
+  }
+
+  // Sort results by GF validation quality and distance
+  return results.sort((a, b) => {
+    // Prioritize certified/dedicated GF places
+    const aScore =
+      a.glutenFreeOptions.some(opt => opt.includes('Certified')) ? 3 :
+      a.glutenFreeOptions.some(opt => opt.includes('Dedicated')) ? 2 :
+      a.glutenFreeOptions.some(opt => opt.includes('user tips')) ? 1 : 0;
+
+    const bScore =
+      b.glutenFreeOptions.some(opt => opt.includes('Certified')) ? 3 :
+      b.glutenFreeOptions.some(opt => opt.includes('Dedicated')) ? 2 :
+      b.glutenFreeOptions.some(opt => opt.includes('user tips')) ? 1 : 0;
+
+    if (aScore !== bScore) return bScore - aScore;
+
+    // Then by distance
+    return (a.distance || 999) - (b.distance || 999);
+  });
+}
+
+/**
+ * Validate if a restaurant actually has gluten-free options
+ * by checking their website/menu
+ */
+export async function validateGlutenFreeOptions(
+  restaurant: Restaurant
+): Promise<string[]> {
+  if (!restaurant.website) {
+    return restaurant.glutenFreeOptions;
+  }
+
+  try {
+    // This would need a backend proxy to avoid CORS
+    // For now, return existing options
+    console.log(`Would validate GF options at: ${restaurant.website}`);
+    return restaurant.glutenFreeOptions;
+  } catch (error) {
+    console.error('Failed to validate GF options:', error);
+    return restaurant.glutenFreeOptions;
+  }
 }
