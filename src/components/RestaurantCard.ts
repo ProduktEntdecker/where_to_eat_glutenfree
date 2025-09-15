@@ -1,4 +1,5 @@
 import { Restaurant } from '../types';
+import { escapeText, sanitizeURL } from '../utils/sanitize';
 
 export class RestaurantCard {
   constructor(private restaurant: Restaurant) {}
@@ -12,7 +13,7 @@ export class RestaurantCard {
     
     card.innerHTML = `
       <div class="flex justify-between items-start mb-2">
-        <h3 class="font-semibold text-lg text-gray-900">${this.restaurant.name}</h3>
+        <h3 class="font-semibold text-lg text-gray-900">${escapeText(this.restaurant.name)}</h3>
         <span class="text-sm text-gray-500">${this.restaurant.distance?.toFixed(1) || '—'} km</span>
       </div>
       
@@ -29,7 +30,7 @@ export class RestaurantCard {
         ` : ''}
       </div>
       
-      <p class="text-sm text-gray-600 mb-3">${this.restaurant.address}</p>
+      <p class="text-sm text-gray-600 mb-3">${escapeText(this.restaurant.address)}</p>
       
       <div class="space-y-2">
         <p class="text-sm font-medium text-gray-900">Gluten-free info:</p>
@@ -48,20 +49,20 @@ export class RestaurantCard {
             }
 
             return `<span class="inline-block ${colorClass} text-xs px-2 py-1 rounded-full">
-              ${option}
+              ${escapeText(option)}
             </span>`;
           }).join('')}
         </div>
         ${this.restaurant.phone ? `
           <div class="mt-2">
-            <a href="tel:${this.restaurant.phone}" class="text-sm text-blue-600 hover:underline">
-              📞 ${this.restaurant.phone}
+            <a href="tel:${escapeText(this.restaurant.phone)}" class="text-sm text-blue-600 hover:underline">
+              📞 ${escapeText(this.restaurant.phone)}
             </a>
           </div>
         ` : ''}
         ${this.restaurant.website ? `
           <div class="mt-1">
-            <a href="${this.restaurant.website}" target="_blank" class="text-sm text-blue-600 hover:underline">
+            <a href="${sanitizeURL(this.restaurant.website)}" target="_blank" rel="noopener noreferrer" class="text-sm text-blue-600 hover:underline">
               🌐 Visit website
             </a>
           </div>

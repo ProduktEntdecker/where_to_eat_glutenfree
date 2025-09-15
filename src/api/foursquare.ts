@@ -14,11 +14,10 @@ import { Restaurant } from '../types';
  * 3. Update the proxy URL below to match your backend endpoint
  */
 
-// For development/testing only - production must use backend proxy
-const FOURSQUARE_API_KEY = import.meta.env.VITE_FOURSQUARE_API_KEY || '';
-const FOURSQUARE_API_URL = 'https://api.foursquare.com/v3/places/search';
-// Backend proxy endpoint for production (uncomment and use this instead)
-// const FOURSQUARE_PROXY_URL = '/api/foursquare/search';
+// Backend proxy endpoint - NEVER store API keys in client code
+const FOURSQUARE_PROXY_URL = '/api/foursquare/search';
+// Direct API URL should only be used from backend
+const IS_BACKEND_AVAILABLE = false; // Set to true when backend is deployed
 
 // Foursquare category IDs for gluten-free and related venues
 const GLUTEN_FREE_CATEGORIES = [
@@ -48,8 +47,8 @@ export async function searchFoursquare(
   radiusMeters: number = 5000
 ): Promise<Restaurant[]> {
 
-  if (!FOURSQUARE_API_KEY) {
-    console.log('Foursquare API key not configured');
+  if (!IS_BACKEND_AVAILABLE) {
+    console.warn('Foursquare requires backend proxy - see BACKEND_SETUP.md');
     return [];
   }
 
@@ -66,10 +65,10 @@ export async function searchFoursquare(
   const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
 
   try {
-    const response = await fetch(`${FOURSQUARE_API_URL}?${params}`, {
+    // Call backend proxy - no API keys in client!
+    const response = await fetch(`${FOURSQUARE_PROXY_URL}?${params}`, {
       headers: {
-        'Accept': 'application/json',
-        'Authorization': FOURSQUARE_API_KEY
+        'Accept': 'application/json'
       },
       signal: controller.signal
     });
@@ -169,18 +168,18 @@ export async function searchFoursquare(
  * Get detailed venue information including menu and tips
  */
 export async function getFoursquareVenueDetails(venueId: string): Promise<any> {
-  if (!FOURSQUARE_API_KEY) {
+  if (!IS_BACKEND_AVAILABLE) {
+    console.warn('Foursquare requires backend proxy');
     return null;
   }
 
   try {
     // Get venue details
     const response = await fetch(
-      `https://api.foursquare.com/v3/places/${venueId}`,
+      `/api/foursquare/places/${venueId}`,
       {
         headers: {
-          'Accept': 'application/json',
-          'Authorization': FOURSQUARE_API_KEY
+          'Accept': 'application/json'
         }
       }
     );
@@ -193,11 +192,10 @@ export async function getFoursquareVenueDetails(venueId: string): Promise<any> {
 
     // Get tips specifically mentioning gluten
     const tipsResponse = await fetch(
-      `https://api.foursquare.com/v3/places/${venueId}/tips?limit=50`,
+      `/api/foursquare/places/${venueId}/tips?limit=50`,
       {
         headers: {
-          'Accept': 'application/json',
-          'Authorization': FOURSQUARE_API_KEY
+          'Accept': 'application/json'
         }
       }
     );

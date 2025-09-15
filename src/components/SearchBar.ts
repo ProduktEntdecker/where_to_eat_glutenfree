@@ -1,3 +1,5 @@
+import { sanitizeInput } from '../utils/sanitize';
+
 export class SearchBar {
   private container: HTMLElement;
   private searchInput!: HTMLInputElement;
@@ -47,8 +49,9 @@ export class SearchBar {
   private setupEventListeners(): void {
     this.searchInput.addEventListener('input', (e) => {
       const target = e.target as HTMLInputElement;
+      const sanitizedValue = sanitizeInput(target.value);
       this.debounce(() => {
-        this.onSearch(target.value);
+        this.onSearch(sanitizedValue);
       }, 500);
     });
 
