@@ -51,13 +51,18 @@ export async function searchFoursquare(
     fields: 'fsq_id,name,location,categories,rating,price,hours,website,tel,description,tips,photos'
   });
 
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+
   try {
     const response = await fetch(`${FOURSQUARE_API_URL}?${params}`, {
       headers: {
         'Accept': 'application/json',
         'Authorization': FOURSQUARE_API_KEY
-      }
+      },
+      signal: controller.signal
     });
+    clearTimeout(timeoutId);
 
     if (!response.ok) {
       throw new Error(`Foursquare API error: ${response.status}`);

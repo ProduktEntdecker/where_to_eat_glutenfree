@@ -45,8 +45,8 @@ export async function searchYelp(
     longitude: location.lng.toString(),
     radius: Math.min(radiusMeters, 40000).toString(), // Yelp max is 40km
     categories: 'restaurants,gluten_free',
-    attributes: 'gluten_free_friendly',
-    limit: '50',
+    // Note: 'gluten_free_friendly' is not a valid Yelp attribute
+    limit: '20', // Reduced to avoid rate limit issues
     sort_by: 'distance'
   });
 

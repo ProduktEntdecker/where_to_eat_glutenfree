@@ -2,7 +2,14 @@
 
 This app uses **completely free APIs** to find validated gluten-free restaurants. No paid subscriptions required!
 
-## Available APIs (All Free)
+## ⚠️ SECURITY WARNING
+
+**NEVER put API keys in client-side code!** All API integrations require a backend proxy to:
+1. Keep API keys secure on the server
+2. Handle CORS restrictions
+3. Control rate limiting
+
+## Available APIs (All Free - But Require Backend)
 
 ### 1. OpenStreetMap/Overpass API ✅
 - **Status**: Already working, no setup needed!
