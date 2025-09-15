@@ -28,6 +28,8 @@ export class SearchBar {
             id="search-input"
             class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
             placeholder="Search gluten-free restaurants..."
+            aria-label="Search gluten-free restaurants"
+            role="searchbox"
           >
         </div>
       </div>
@@ -55,9 +57,10 @@ export class SearchBar {
       }, 500);
     });
 
-    this.searchInput.addEventListener('keypress', (e) => {
+    this.searchInput.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') {
-        this.onSearch(this.searchInput.value);
+        const sanitizedValue = sanitizeInput(this.searchInput.value);
+        this.onSearch(sanitizedValue);
       }
     });
   }

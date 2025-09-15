@@ -14,24 +14,26 @@ This app uses **completely free APIs** to find validated gluten-free restaurants
 ### 1. OpenStreetMap/Overpass API ✅
 - **Status**: Already working, no setup needed!
 - **Cost**: Completely free, no API key required
-- **Limits**: None (reasonable use)
+- **Limits**: Fair use policy (be respectful, add User-Agent via backend proxy)
 - **Coverage**: Worldwide
+- **Note**: For heavy usage, consider caching results and implementing exponential backoff
 
 ### 2. Foursquare Places API (Recommended)
 - **Cost**: Free tier includes 100,000 calls/month
 - **Best for**: Validated gluten-free restaurants with user tips
 - **Setup**:
-  1. Sign up at https://foursquare.com/developers/
+  1. Sign up at <https://foursquare.com/developers/>
   2. Create a new app
   3. Copy your API key
-  4. Add to `.env` file: `VITE_FOURSQUARE_API_KEY=your_key_here`
+  4. Store key in backend environment (NEVER use VITE_ prefix for secrets)
+  5. Implement backend proxy at `/api/foursquare/search`
 
 ### 3. Yelp Fusion API (Requires Backend)
 - **Cost**: Free tier includes 5,000 calls/day
 - **Best for**: Restaurant reviews mentioning gluten-free
 - **⚠️ CORS Limitation**: Yelp API blocks browser requests. Requires backend proxy.
 - **Setup**:
-  1. Sign up at https://www.yelp.com/developers
+  1. Sign up at <https://www.yelp.com/developers>
   2. Create an app
   3. Copy your API key
   4. Implement backend proxy endpoint to make Yelp API calls

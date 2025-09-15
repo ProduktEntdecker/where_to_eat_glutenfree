@@ -38,6 +38,18 @@ const mockRestaurants: Restaurant[] = [
 ];
 
 /**
+ * Helper function to add timeout to a promise
+ */
+function withTimeout<T>(promise: Promise<T>, timeoutMs: number = 6000): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<T>((_, reject) =>
+      setTimeout(() => reject(new Error(`Request timeout after ${timeoutMs}ms`)), timeoutMs)
+    )
+  ]);
+}
+
+/**
  * Search for gluten-free restaurants using multiple free APIs
  * Priority order:
  * 1. Foursquare (has GF categories) - Free up to 100k calls/month
@@ -55,9 +67,9 @@ export async function searchRestaurants(
 
   // If location is available, search with location-based APIs
   if (location) {
-    // Try Foursquare first (best for GF-specific data)
+    // Try Foursquare first (best for GF-specific data) with 6 second timeout
     searchPromises.push(
-      searchFoursquare(location, query || 'gluten free', 5000)
+      withTimeout(searchFoursquare(location, query || 'gluten free', 5000), 6000)
         .catch(err => {
           console.warn('Foursquare search failed:', err);
           return [];
@@ -67,16 +79,16 @@ export async function searchRestaurants(
     // Yelp API disabled - requires backend proxy due to CORS
     // Uncomment when backend proxy is implemented
     // searchPromises.push(
-    //   searchYelp(location, query || 'gluten free', 5000)
+    //   withTimeout(searchYelp(location, query || 'gluten free', 5000), 6000)
     //     .catch(err => {
     //       console.warn('Yelp search failed:', err);
     //       return [];
     //     })
     // );
 
-    // Also try OpenStreetMap (completely free, no limits)
+    // Also try OpenStreetMap (completely free, no limits) with 6 second timeout
     searchPromises.push(
-      searchOpenStreetMap(location, 5)
+      withTimeout(searchOpenStreetMap(location, 5), 6000)
         .catch(err => {
           console.warn('OpenStreetMap search failed:', err);
           return [];
