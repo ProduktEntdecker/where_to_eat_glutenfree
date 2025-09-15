@@ -4,3 +4,5 @@
 # GitHub App credentials
 gha-creds-*.json
 .env
+node_modules/
+node_modules/
