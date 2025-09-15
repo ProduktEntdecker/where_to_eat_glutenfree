@@ -3,15 +3,20 @@ import { Restaurant } from '../types';
 /**
  * Yelp Fusion API Integration
  * Free tier: 5,000 calls/day
- * Has gluten_free_friendly attribute and searchable reviews
+ * Has gluten-free categories and searchable reviews
  *
- * IMPORTANT: Yelp API requires a backend proxy due to CORS restrictions.
- * This code is provided as a reference implementation.
- * In production, calls should be made from a backend server.
+ * IMPORTANT: This implementation requires a backend proxy.
+ * DO NOT store API keys in client code!
+ *
+ * Backend setup required:
+ * 1. Create proxy endpoints: /api/yelp/search and /api/yelp/businesses/:id/reviews
+ * 2. Store YELP_API_KEY in server environment (never use VITE_ prefix)
+ * 3. Update the proxy URLs below to match your backend endpoints
  */
 
-const YELP_API_KEY = import.meta.env.VITE_YELP_API_KEY || '';
-const YELP_API_URL = 'https://api.yelp.com/v3/businesses/search';
+// Backend proxy endpoints (adjust to match your server setup)
+const YELP_PROXY_SEARCH = '/api/yelp/search';
+const YELP_PROXY_REVIEWS = '/api/yelp/businesses';
 
 function calculateDistance(
   lat1: number, lon1: number,
@@ -34,10 +39,8 @@ export async function searchYelp(
   radiusMeters: number = 5000
 ): Promise<Restaurant[]> {
 
-  if (!YELP_API_KEY) {
-    console.log('Yelp API key not configured');
-    return [];
-  }
+  // Note: Backend proxy required - this won't work without server setup
+  console.warn('Yelp integration requires backend proxy - see BACKEND_SETUP.md');
 
   const params = new URLSearchParams({
     term: `${query} restaurant`,
@@ -45,21 +48,14 @@ export async function searchYelp(
     longitude: location.lng.toString(),
     radius: Math.min(radiusMeters, 40000).toString(), // Yelp max is 40km
     categories: 'restaurants,gluten_free',
-    // Note: 'gluten_free_friendly' is not a valid Yelp attribute
     limit: '20', // Reduced to avoid rate limit issues
     sort_by: 'distance'
   });
 
   try {
-    // IMPORTANT: This direct API call will fail due to CORS.
-    // Implement a backend proxy endpoint that makes this call server-side.
-    // Example: fetch('/api/yelp/search?${params}')
-    const response = await fetch(`${YELP_API_URL}?${params}`, {
-      headers: {
-        'Authorization': `Bearer ${YELP_API_KEY}`,
-        'Accept': 'application/json'
-      }
-    });
+    // Call backend proxy endpoint (no API key in client!)
+    // Your backend should handle the Yelp API authentication
+    const response = await fetch(`${YELP_PROXY_SEARCH}?${params}`);
 
     if (!response.ok) {
       throw new Error(`Yelp API error: ${response.status}`);
@@ -142,20 +138,12 @@ export async function searchYelp(
 export async function getYelpGlutenFreeReviews(
   businessId: string
 ): Promise<string[]> {
-  if (!YELP_API_KEY) {
-    return [];
-  }
+  // Note: Backend proxy required - this won't work without server setup
+  console.warn('Yelp reviews require backend proxy - see BACKEND_SETUP.md');
 
   try {
-    const response = await fetch(
-      `https://api.yelp.com/v3/businesses/${businessId}/reviews`,
-      {
-        headers: {
-          'Authorization': `Bearer ${YELP_API_KEY}`,
-          'Accept': 'application/json'
-        }
-      }
-    );
+    // Call backend proxy endpoint (no API key in client!)
+    const response = await fetch(`${YELP_PROXY_REVIEWS}/${businessId}/reviews`);
 
     if (!response.ok) {
       throw new Error(`Failed to get reviews: ${response.status}`);

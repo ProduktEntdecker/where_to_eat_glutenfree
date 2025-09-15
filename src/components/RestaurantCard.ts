@@ -32,14 +32,40 @@ export class RestaurantCard {
       <p class="text-sm text-gray-600 mb-3">${this.restaurant.address}</p>
       
       <div class="space-y-2">
-        <p class="text-sm font-medium text-gray-900">Gluten-free options:</p>
+        <p class="text-sm font-medium text-gray-900">Gluten-free info:</p>
         <div class="flex flex-wrap gap-1">
-          ${this.restaurant.glutenFreeOptions.map(option => `
-            <span class="inline-block bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
+          ${this.restaurant.glutenFreeOptions.map(option => {
+            // Color code based on confidence level
+            let colorClass = 'bg-gray-100 text-gray-700'; // Default
+            if (option.includes('Fully gluten-free') || option.includes('Certified')) {
+              colorClass = 'bg-green-100 text-green-800 font-semibold';
+            } else if (option.includes('naturally GF') || option.includes('Rice') || option.includes('Corn tortillas')) {
+              colorClass = 'bg-blue-100 text-blue-800';
+            } else if (option.includes('No GF info') || option.includes('call to confirm')) {
+              colorClass = 'bg-orange-100 text-orange-800';
+            } else if (option.includes('available') || option.includes('options')) {
+              colorClass = 'bg-green-50 text-green-700';
+            }
+
+            return `<span class="inline-block ${colorClass} text-xs px-2 py-1 rounded-full">
               ${option}
-            </span>
-          `).join('')}
+            </span>`;
+          }).join('')}
         </div>
+        ${this.restaurant.phone ? `
+          <div class="mt-2">
+            <a href="tel:${this.restaurant.phone}" class="text-sm text-blue-600 hover:underline">
+              📞 ${this.restaurant.phone}
+            </a>
+          </div>
+        ` : ''}
+        ${this.restaurant.website ? `
+          <div class="mt-1">
+            <a href="${this.restaurant.website}" target="_blank" class="text-sm text-blue-600 hover:underline">
+              🌐 Visit website
+            </a>
+          </div>
+        ` : ''}
       </div>
     `;
 

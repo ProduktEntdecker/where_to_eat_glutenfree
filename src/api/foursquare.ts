@@ -4,10 +4,21 @@ import { Restaurant } from '../types';
  * Foursquare Places API Integration
  * Free tier: 100,000 calls/month
  * Specifically has gluten-free restaurant categories
+ *
+ * IMPORTANT: This implementation requires a backend proxy for production.
+ * DO NOT store API keys in client code!
+ *
+ * Backend setup required:
+ * 1. Create proxy endpoint: /api/foursquare/search
+ * 2. Store FOURSQUARE_API_KEY in server environment (never use VITE_ prefix)
+ * 3. Update the proxy URL below to match your backend endpoint
  */
 
+// For development/testing only - production must use backend proxy
 const FOURSQUARE_API_KEY = import.meta.env.VITE_FOURSQUARE_API_KEY || '';
 const FOURSQUARE_API_URL = 'https://api.foursquare.com/v3/places/search';
+// Backend proxy endpoint for production (uncomment and use this instead)
+// const FOURSQUARE_PROXY_URL = '/api/foursquare/search';
 
 // Foursquare category IDs for gluten-free and related venues
 const GLUTEN_FREE_CATEGORIES = [

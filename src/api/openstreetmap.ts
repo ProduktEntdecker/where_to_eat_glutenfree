@@ -36,19 +36,26 @@ export async function searchOpenStreetMap(
   // Convert radius to meters for Overpass
   const radiusMeters = radiusKm * 1000;
   
-  // Overpass QL query to find restaurants
-  // This searches for:
-  // - Places tagged as restaurant, cafe, fast_food
-  // - With diet:gluten_free=* or gluten_free=* tags
-  // - Or just all restaurants if no specific gluten-free tags
+  // Overpass QL query to find restaurants with potential gluten-free options
+  // Prioritize places explicitly marked as gluten-free, then cuisines likely to have GF options
   const query = `
     [out:json][timeout:25];
     (
-      // Restaurants with gluten-free tags
+      // Priority 1: Explicitly marked gluten-free places
       node["amenity"~"restaurant|cafe|fast_food"]["diet:gluten_free"](around:${radiusMeters},${location.lat},${location.lng});
       node["amenity"~"restaurant|cafe|fast_food"]["gluten_free"](around:${radiusMeters},${location.lat},${location.lng});
-      // All restaurants (we'll filter later)
-      node["amenity"~"restaurant|cafe|fast_food"](around:${radiusMeters},${location.lat},${location.lng});
+      node["shop"="bakery"]["gluten_free"="yes"](around:${radiusMeters},${location.lat},${location.lng});
+      node["shop"="health_food"](around:${radiusMeters},${location.lat},${location.lng});
+
+      // Priority 2: Cuisines typically with good GF options
+      node["amenity"~"restaurant|cafe"]["cuisine"~"thai|vietnamese|indian|mexican|sushi|japanese"](around:${radiusMeters},${location.lat},${location.lng});
+
+      // Priority 3: Health-conscious places
+      node["amenity"~"restaurant|cafe"]["organic"="yes"](around:${radiusMeters},${location.lat},${location.lng});
+      node["amenity"~"restaurant|cafe"]["diet:vegetarian"="yes"](around:${radiusMeters},${location.lat},${location.lng});
+
+      // Priority 4: All other restaurants (limit to closer ones)
+      node["amenity"~"restaurant|cafe|fast_food"](around:${Math.min(radiusMeters/2, 2000)},${location.lat},${location.lng});
     );
     out body;
   `;
@@ -89,14 +96,30 @@ export async function searchOpenStreetMap(
           glutenFreeOptions.push('Gluten-free cuisine');
         }
         
-        // If no specific tags, but it's a health/vegan place, mention to check
+        // If no specific tags, check cuisine type for likely GF options
         if (glutenFreeOptions.length === 0) {
-          if (tags['diet:vegan'] === 'yes' || tags['diet:vegetarian'] === 'yes') {
-            glutenFreeOptions.push('Vegan/Vegetarian - likely has GF options');
-          } else if (tags.cuisine?.includes('asian') || tags.cuisine?.includes('thai') || tags.cuisine?.includes('vietnamese')) {
-            glutenFreeOptions.push('Asian cuisine - often has rice-based GF options');
+          const cuisine = tags.cuisine?.toLowerCase() || '';
+          const name = tags.name?.toLowerCase() || '';
+
+          // Specific cuisine assessments
+          if (cuisine.includes('thai') || cuisine.includes('vietnamese')) {
+            glutenFreeOptions.push('Thai/Vietnamese - Rice noodles & GF options available');
+          } else if (cuisine.includes('indian')) {
+            glutenFreeOptions.push('Indian - Many naturally GF dishes (dal, rice, etc.)');
+          } else if (cuisine.includes('mexican')) {
+            glutenFreeOptions.push('Mexican - Corn tortillas are naturally GF');
+          } else if (cuisine.includes('sushi') || cuisine.includes('japanese')) {
+            glutenFreeOptions.push('Japanese - GF soy sauce often available, rice-based');
+          } else if (cuisine.includes('steak') || cuisine.includes('grill')) {
+            glutenFreeOptions.push('Steakhouse - Grilled meats naturally GF');
+          } else if (tags.shop === 'health_food' || tags.organic === 'yes') {
+            glutenFreeOptions.push('Health food store - Often stocks GF products');
+          } else if (tags.shop === 'bakery' && name.includes('gluten')) {
+            glutenFreeOptions.push('Bakery with potential GF options');
+          } else if (tags['diet:vegetarian'] === 'yes' || tags['diet:vegan'] === 'yes') {
+            glutenFreeOptions.push('Vegetarian/Vegan - Ask about GF options');
           } else {
-            glutenFreeOptions.push('Call to confirm gluten-free options');
+            glutenFreeOptions.push('No GF info available - call to confirm');
           }
         }
         
