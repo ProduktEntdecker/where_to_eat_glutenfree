@@ -2,6 +2,7 @@ import { SearchBar } from './components/SearchBar';
 import { RestaurantCard } from './components/RestaurantCard';
 import { LoadingSpinner } from './components/LoadingSpinner';
 import { EmptyState } from './components/EmptyState';
+import { NetworkStatus } from './components/NetworkStatus';
 import { getCurrentLocation } from './services/geolocation';
 import { searchRestaurants } from './api/places';
 import { Restaurant } from './types';
@@ -10,6 +11,7 @@ export class GlutenFreeFinderApp {
   private searchBar: SearchBar;
   private loadingSpinner: LoadingSpinner;
   private emptyState: EmptyState;
+  private networkStatus: NetworkStatus;
   private restaurants: Restaurant[] = [];
   private userLocation: { lat: number; lng: number } | undefined = undefined;
 
@@ -17,6 +19,7 @@ export class GlutenFreeFinderApp {
     this.searchBar = new SearchBar(this.handleSearch.bind(this));
     this.loadingSpinner = new LoadingSpinner();
     this.emptyState = new EmptyState();
+    this.networkStatus = new NetworkStatus();
     this.init();
   }
 
@@ -66,6 +69,9 @@ export class GlutenFreeFinderApp {
     if (searchContainer) {
       searchContainer.appendChild(this.searchBar.render());
     }
+
+    // Mount network status indicator
+    document.body.appendChild(this.networkStatus.render());
   }
 
   private async handleSearch(query: string): Promise<void> {
