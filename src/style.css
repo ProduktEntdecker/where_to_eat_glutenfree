@@ -2,20 +2,154 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Custom styles for the app */
+:root {
+  --safe-area-top: env(safe-area-inset-top, 0px);
+  --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+  --ios-blue: #007AFF;
+  --ios-green: #34C759;
+  --ios-red: #FF3B30;
+  --ios-orange: #FF9500;
+  --ios-gray: #8E8E93;
+  --ios-gray2: #AEAEB2;
+  --ios-gray3: #C7C7CC;
+  --ios-gray4: #D1D1D6;
+  --ios-gray5: #E5E5EA;
+  --ios-gray6: #F2F2F7;
+  --ios-bg: #F2F2F7;
+  --ios-card: #FFFFFF;
+  --ios-separator: rgba(60, 60, 67, 0.12);
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+}
+
+html { height: 100%; overflow: hidden; }
+
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif;
+  background-color: var(--ios-bg);
+  height: 100%;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-.animate-spin {
-  animation: spin 1s linear infinite;
+#app { height: 100%; overflow: hidden; }
+
+.safe-area-top { padding-top: var(--safe-area-top); }
+.safe-area-bottom { padding-bottom: var(--safe-area-bottom); }
+
+.ios-navbar {
+  background: rgba(249, 249, 249, 0.94);
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  border-bottom: 0.5px solid var(--ios-separator);
 }
 
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.ios-tabbar {
+  background: rgba(249, 249, 249, 0.94);
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  border-top: 0.5px solid var(--ios-separator);
+  padding-bottom: var(--safe-area-bottom);
 }
+
+.ios-card { background: var(--ios-card); border-radius: 12px; overflow: hidden; }
+
+.ios-list-group { background: var(--ios-card); border-radius: 12px; overflow: hidden; }
+
+.ios-list-item {
+  padding: 11px 16px;
+  border-bottom: 0.5px solid var(--ios-separator);
+  display: flex;
+  align-items: center;
+}
+
+.ios-list-item:last-child { border-bottom: none; }
+
+.ios-search {
+  background: rgba(118, 118, 128, 0.12);
+  border-radius: 10px;
+  border: none;
+  padding: 8px 12px 8px 32px;
+  font-size: 17px;
+  width: 100%;
+  outline: none;
+  color: #000;
+}
+
+.ios-search::placeholder { color: var(--ios-gray); }
+
+.ios-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 16px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+.animate-spin { animation: spin 1s linear infinite; }
+
+@keyframes slideUp {
+  from { transform: translateY(100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+.slide-up { animation: slideUp 0.35s cubic-bezier(0.2, 0.9, 0.3, 1); }
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.fade-in { animation: fadeIn 0.25s ease-out; }
+
+@keyframes slideFromRight { from { transform: translateX(100%); } to { transform: translateX(0); } }
+.slide-from-right { animation: slideFromRight 0.3s cubic-bezier(0.2, 0.9, 0.3, 1); }
+
+.scroll-container {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+}
+
+.star-filled { color: #FF9500; }
+.star-empty { color: var(--ios-gray4); }
+
+.ios-toggle {
+  appearance: none;
+  width: 51px;
+  height: 31px;
+  border-radius: 15.5px;
+  background: var(--ios-gray4);
+  position: relative;
+  cursor: pointer;
+  transition: background 0.3s;
+  flex-shrink: 0;
+}
+.ios-toggle:checked { background: var(--ios-green); }
+.ios-toggle::before {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 27px;
+  height: 27px;
+  border-radius: 50%;
+  background: white;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  transition: transform 0.3s;
+}
+.ios-toggle:checked::before { transform: translateX(20px); }
+
+.photo-placeholder {
+  background: linear-gradient(135deg, var(--ios-gray5) 0%, var(--ios-gray4) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.press-effect:active { transform: scale(0.97); transition: transform 0.1s; }
+.filter-active { background: var(--ios-green); color: white; }
+.filter-inactive { background: rgba(118, 118, 128, 0.12); color: #000; }
+
+.detail-overlay { position: fixed; inset: 0; z-index: 50; background: var(--ios-bg); }

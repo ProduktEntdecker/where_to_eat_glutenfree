@@ -1,25 +1,36 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="de">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Gluten-Free Restaurant Finder</title>
-    <meta name="description" content="Find gluten-free restaurants and safe dining options near you" />
-    
-    <!-- PWA meta tags -->
-    <meta name="theme-color" content="#10B981" />
-    <link rel="apple-touch-icon" href="/icon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
+    <title>GF Finder - Glutenfreie Restaurants</title>
+    <meta name="description" content="Finde glutenfreie Restaurants und sichere Speiseoptionen in deiner Naehe" />
+
+    <!-- PWA & iOS Meta Tags -->
+    <meta name="theme-color" content="#F2F2F7" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="GF Finder" />
+    <meta name="mobile-web-app-capable" content="yes" />
+
+    <!-- Icons -->
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+    <link rel="icon" type="image/svg+xml" href="/icon.svg" />
     <link rel="manifest" href="/manifest.json" />
+
+    <!-- Splash Screens for iOS -->
+    <meta name="format-detection" content="telephone=no" />
   </head>
   <body>
     <div id="app">
-      <div class="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div class="text-center">
-          <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500 mx-auto mb-4"></div>
-          <p class="text-gray-600">Loading...</p>
+      <div style="height: 100vh; display: flex; align-items: center; justify-content: center; background: #F2F2F7;">
+        <div style="text-align: center;">
+          <div style="width: 48px; height: 48px; border: 3px solid transparent; border-top-color: #34C759; border-right-color: #34C759; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 16px;"></div>
+          <p style="color: #8E8E93; font-family: -apple-system, sans-serif; font-size: 15px;">Wird geladen...</p>
         </div>
       </div>
     </div>
+    <style>@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }</style>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

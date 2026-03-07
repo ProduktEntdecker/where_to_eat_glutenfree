@@ -1,6 +1,29 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# Environment
+.env
+.env.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Capacitor native projects (generated)
+ios/
+android/
+
 # gemini-cli settings
 .gemini/
 
 # GitHub App credentials
 gha-creds-*.json
-.env

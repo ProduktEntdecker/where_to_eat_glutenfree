@@ -1,16 +1,26 @@
 {
   "name": "gluten-free-restaurant-finder",
-  "version": "1.0.0",
-  "description": "Mobile web app for finding gluten-free restaurants",
+  "version": "2.0.0",
+  "description": "iOS App zum Finden glutenfreier Restaurants in der Naehe",
   "main": "index.html",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "cap:add:ios": "npx cap add ios",
+    "cap:sync": "npm run build && npx cap sync",
+    "cap:open:ios": "npx cap open ios"
   },
   "dependencies": {
-    "lucide": "^0.294.0"
+    "@capacitor/browser": "^8.0.2",
+    "@capacitor/cli": "^8.2.0",
+    "@capacitor/core": "^8.2.0",
+    "@capacitor/geolocation": "^8.1.0",
+    "@capacitor/haptics": "^8.0.1",
+    "@capacitor/ios": "^8.2.0",
+    "@capacitor/preferences": "^8.0.1",
+    "@capacitor/status-bar": "^8.0.1"
   },
   "devDependencies": {
     "@types/node": "^20.5.0",

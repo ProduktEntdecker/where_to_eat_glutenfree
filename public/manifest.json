@@ -1,17 +1,29 @@
 {
-  "name": "Gluten-Free Restaurant Finder",
+  "name": "GF Finder - Glutenfreie Restaurants",
   "short_name": "GF Finder",
-  "description": "Find gluten-free restaurants and safe dining options near you",
+  "description": "Finde glutenfreie Restaurants und sichere Speiseoptionen in deiner Naehe",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#10B981",
+  "background_color": "#F2F2F7",
+  "theme_color": "#F2F2F7",
   "orientation": "portrait",
+  "categories": ["food", "health", "lifestyle"],
   "icons": [
     {
       "src": "/icon.svg",
       "sizes": "any",
-      "type": "image/svg+xml"
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
     }
   ]
 }

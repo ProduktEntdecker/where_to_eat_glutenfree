@@ -11,27 +11,25 @@ export class SearchBar {
 
   private createElement(): HTMLElement {
     const container = document.createElement('div');
-    container.className = 'sticky top-0 z-20 bg-white border-b border-gray-200 p-4';
-    
+    container.className = 'px-4 py-2';
+
     container.innerHTML = `
-      <div class="space-y-4">
-        <div class="relative">
-          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-            </svg>
-          </div>
-          <input
-            type="text"
-            id="search-input"
-            class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
-            placeholder="Search gluten-free restaurants..."
-          >
+      <div class="relative">
+        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8E8E93" stroke-width="2">
+            <circle cx="11" cy="11" r="7"/>
+            <path d="M21 21l-4.35-4.35"/>
+          </svg>
         </div>
+        <input
+          type="text"
+          class="ios-search"
+          placeholder="Restaurants suchen..."
+        >
       </div>
     `;
 
-    this.searchInput = container.querySelector('#search-input') as HTMLInputElement;
+    this.searchInput = container.querySelector('input') as HTMLInputElement;
     this.setupEventListeners();
 
     return container;
@@ -41,7 +39,7 @@ export class SearchBar {
     if (this.debounceTimer) {
       clearTimeout(this.debounceTimer);
     }
-    this.debounceTimer = setTimeout(func, delay);
+    this.debounceTimer = setTimeout(func, delay) as unknown as number;
   }
 
   private setupEventListeners(): void {
@@ -49,17 +47,19 @@ export class SearchBar {
       const target = e.target as HTMLInputElement;
       this.debounce(() => {
         this.onSearch(target.value);
-      }, 500);
+      }, 400);
     });
 
     this.searchInput.addEventListener('keypress', (e) => {
       if (e.key === 'Enter') {
+        e.preventDefault();
         this.onSearch(this.searchInput.value);
+        this.searchInput.blur();
       }
     });
   }
 
-  public render(): HTMLElement {
+  render(): HTMLElement {
     return this.container;
   }
 }

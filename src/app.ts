@@ -2,151 +2,276 @@ import { SearchBar } from './components/SearchBar';
 import { RestaurantCard } from './components/RestaurantCard';
 import { LoadingSpinner } from './components/LoadingSpinner';
 import { EmptyState } from './components/EmptyState';
+import { TabBar } from './components/TabBar';
+import { FilterBar } from './components/FilterBar';
+import { RestaurantDetail } from './components/RestaurantDetail';
+import { SettingsView } from './components/SettingsView';
 import { getCurrentLocation } from './services/geolocation';
-import { searchRestaurants } from './api/places';
-import { Restaurant } from './types';
+import { searchRestaurants, getRestaurantById } from './api/places';
+import { getFavorites } from './services/favorites';
+import { router } from './services/router';
+import { Restaurant, SearchFilters, TabId } from './types';
 
 export class GlutenFreeFinderApp {
-  private searchBar: SearchBar;
-  private loadingSpinner: LoadingSpinner;
-  private emptyState: EmptyState;
   private restaurants: Restaurant[] = [];
-  private userLocation: { lat: number; lng: number } | undefined = undefined;
+  private userLocation: { lat: number; lng: number } | undefined;
+  private loadingSpinner: LoadingSpinner;
+  private filters: SearchFilters = {
+    maxDistance: 50,
+    minRating: 0,
+    openNow: false,
+    maxPrice: 4
+  };
+  private currentQuery = '';
 
   constructor() {
-    this.searchBar = new SearchBar(this.handleSearch.bind(this));
     this.loadingSpinner = new LoadingSpinner();
-    this.emptyState = new EmptyState();
     this.init();
   }
 
-  private async init() {
-    console.log('App initializing...');
-    this.render();
+  private async init(): Promise<void> {
+    this.renderShell();
 
-    // Request user location for restaurant search
+    router.onChange((_tab: TabId) => {
+      const detailId = router.getDetailId();
+      if (detailId) {
+        this.showRestaurantDetail(detailId);
+      } else {
+        this.hideDetail();
+        this.renderTab(router.getCurrentTab());
+      }
+    });
+
     await this.requestLocation();
-
-    // Load initial restaurants using OpenStreetMap (free, no API key needed!)
+    this.renderTab('nearby');
     this.handleSearch('');
   }
 
-  private render(): void {
+  private renderShell(): void {
     const app = document.querySelector('#app');
-    if (!app) {
-      console.error('App element not found');
-      return;
-    }
-
-    // Clear any existing content
-    app.innerHTML = '';
+    if (!app) return;
 
     app.innerHTML = `
-      <div class="min-h-screen bg-gray-50">
-        <div class="max-w-md mx-auto bg-white min-h-screen">
-          <!-- Header -->
-          <div class="bg-green-500 text-white p-4">
-            <h1 class="text-xl font-bold text-center">Gluten-Free Finder</h1>
-            <p class="text-green-100 text-sm text-center mt-1">Find safe dining options near you</p>
-          </div>
-          
-          <!-- Search Bar Container -->
-          <div id="search-container"></div>
-          
-          <!-- Content Container -->
-          <div id="content-container" class="p-4">
-            <!-- Results will be rendered here -->
-          </div>
+      <div class="h-full flex flex-col" style="background: var(--ios-bg);">
+        <div class="ios-navbar safe-area-top px-4 pt-2 pb-2">
+          <h1 id="nav-title" class="text-lg font-bold text-black text-center">In der Naehe</h1>
         </div>
+        <div id="main-content" class="flex-1 overflow-hidden flex flex-col"></div>
+        <div id="tab-bar-container"></div>
+        <div id="detail-container"></div>
       </div>
     `;
 
-    // Mount search bar
-    const searchContainer = document.querySelector('#search-container');
-    if (searchContainer) {
-      searchContainer.appendChild(this.searchBar.render());
+    const tabBar = new TabBar();
+    document.querySelector('#tab-bar-container')?.appendChild(tabBar.render());
+  }
+
+  private renderTab(tab: TabId): void {
+    const titleMap: Record<TabId, string> = {
+      nearby: 'In der Naehe',
+      search: 'Suche',
+      favorites: 'Favoriten',
+      settings: 'Einstellungen'
+    };
+
+    const navTitle = document.querySelector('#nav-title');
+    if (navTitle) navTitle.textContent = titleMap[tab];
+
+    const content = document.querySelector('#main-content');
+    if (!content) return;
+
+    switch (tab) {
+      case 'nearby':
+        this.renderNearbyTab(content);
+        break;
+      case 'search':
+        this.renderSearchTab(content);
+        break;
+      case 'favorites':
+        this.renderFavoritesTab(content);
+        break;
+      case 'settings':
+        this.renderSettingsTab(content);
+        break;
     }
+  }
+
+  private renderNearbyTab(container: Element): void {
+    container.innerHTML = `
+      <div id="filter-container"></div>
+      <div id="results-container" class="flex-1 scroll-container px-4 pb-24 pt-2"></div>
+    `;
+
+    const filterBar = new FilterBar(this.filters, (newFilters) => {
+      this.filters = newFilters;
+      this.renderResults();
+    });
+    document.querySelector('#filter-container')?.appendChild(filterBar.getElement());
+
+    if (this.restaurants.length > 0) {
+      this.renderResults();
+    } else {
+      const results = document.querySelector('#results-container');
+      if (results) {
+        results.innerHTML = '';
+        results.appendChild(this.loadingSpinner.render());
+        this.loadingSpinner.show();
+      }
+    }
+  }
+
+  private renderSearchTab(container: Element): void {
+    container.innerHTML = `
+      <div id="search-bar-container"></div>
+      <div id="search-results" class="flex-1 scroll-container px-4 pb-24 pt-2"></div>
+    `;
+
+    const searchBar = new SearchBar((query) => {
+      this.currentQuery = query;
+      this.handleSearch(query);
+    });
+    document.querySelector('#search-bar-container')?.appendChild(searchBar.render());
+
+    if (this.currentQuery && this.restaurants.length > 0) {
+      this.renderResults('search-results');
+    }
+  }
+
+  private renderFavoritesTab(container: Element): void {
+    container.innerHTML = `
+      <div id="favorites-list" class="flex-1 scroll-container px-4 pb-24 pt-4"></div>
+    `;
+
+    const favorites = getFavorites();
+    const listContainer = container.querySelector('#favorites-list');
+    if (!listContainer) return;
+
+    if (favorites.length === 0) {
+      const empty = new EmptyState(
+        'Noch keine Favoriten',
+        'Tippe auf das Herz bei einem Restaurant, um es zu speichern'
+      );
+      listContainer.appendChild(empty.render());
+      return;
+    }
+
+    favorites.forEach(restaurant => {
+      const card = new RestaurantCard(restaurant);
+      listContainer.appendChild(card.createElement());
+    });
+  }
+
+  private renderSettingsTab(container: Element): void {
+    container.innerHTML = `
+      <div class="flex-1 scroll-container pb-24">
+        <div id="settings-content"></div>
+      </div>
+    `;
+
+    const settingsView = new SettingsView();
+    container.querySelector('#settings-content')?.appendChild(settingsView.getElement());
   }
 
   private async handleSearch(query: string): Promise<void> {
-    const contentContainer = document.querySelector('#content-container');
-    if (!contentContainer) return;
+    const targetId = router.getCurrentTab() === 'search' ? 'search-results' : 'results-container';
+    const resultsContainer = document.querySelector(`#${targetId}`);
+    if (!resultsContainer) return;
 
-    // Show loading
-    contentContainer.innerHTML = '';
-    contentContainer.appendChild(this.loadingSpinner.render());
+    resultsContainer.innerHTML = '';
+    resultsContainer.appendChild(this.loadingSpinner.render());
     this.loadingSpinner.show();
 
     try {
-      console.log('Searching for:', query);
       this.restaurants = await searchRestaurants(query, this.userLocation);
-      
-      // Hide loading
       this.loadingSpinner.hide();
-      
-      // Render results
-      this.renderResults();
+      this.renderResults(targetId);
     } catch (error) {
       console.error('Search error:', error);
       this.loadingSpinner.hide();
-      this.renderError();
+      this.renderError(targetId);
     }
   }
 
-  private renderResults(): void {
-    const contentContainer = document.querySelector('#content-container');
-    if (!contentContainer) return;
+  private renderResults(containerId = 'results-container'): void {
+    const container = document.querySelector(`#${containerId}`);
+    if (!container) return;
 
-    contentContainer.innerHTML = '';
+    container.innerHTML = '';
 
-    if (this.restaurants.length === 0) {
-      contentContainer.appendChild(this.emptyState.render());
+    let filtered = this.restaurants;
+
+    if (this.filters.openNow) {
+      filtered = filtered.filter(r => r.openNow === true);
+    }
+    if (this.filters.minRating > 0) {
+      filtered = filtered.filter(r => r.rating >= this.filters.minRating);
+    }
+    if (this.filters.maxDistance < 50) {
+      filtered = filtered.filter(r => (r.distance || 0) <= this.filters.maxDistance);
+    }
+    if (this.filters.maxPrice < 4) {
+      filtered = filtered.filter(r => r.priceLevel <= this.filters.maxPrice && r.priceLevel > 0);
+    }
+
+    if (filtered.length === 0) {
+      const empty = new EmptyState();
+      container.appendChild(empty.render());
       return;
     }
 
-    // Create results container
-    const resultsContainer = document.createElement('div');
-    resultsContainer.className = 'space-y-4';
+    const countEl = document.createElement('p');
+    countEl.className = 'text-xs mb-3';
+    countEl.style.color = 'var(--ios-gray)';
+    countEl.textContent = `${filtered.length} Restaurant${filtered.length !== 1 ? 's' : ''} gefunden`;
+    container.appendChild(countEl);
 
-    // Add restaurant cards
-    this.restaurants.forEach(restaurant => {
+    filtered.forEach(restaurant => {
       const card = new RestaurantCard(restaurant);
-      resultsContainer.appendChild(card.createElement());
+      container.appendChild(card.createElement());
     });
-
-    contentContainer.appendChild(resultsContainer);
   }
 
-  private renderError(): void {
-    const contentContainer = document.querySelector('#content-container');
-    if (!contentContainer) return;
+  private renderError(containerId = 'results-container'): void {
+    const container = document.querySelector(`#${containerId}`);
+    if (!container) return;
 
-    contentContainer.innerHTML = `
-      <div class="flex flex-col items-center justify-center py-12 text-center">
-        <div class="text-red-500 mb-4">
-          <svg class="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-          </svg>
-        </div>
-        <h3 class="text-lg font-medium text-gray-900 mb-2">Something went wrong</h3>
-        <p class="text-gray-500">Please try again later</p>
-      </div>
-    `;
+    container.innerHTML = '';
+    const errorState = new EmptyState(
+      'Etwas ist schiefgelaufen',
+      'Bitte versuche es spaeter erneut'
+    );
+    container.appendChild(errorState.render());
+  }
+
+  private showRestaurantDetail(id: string): void {
+    const restaurant = getRestaurantById(id)
+      || this.restaurants.find(r => r.id === id)
+      || getFavorites().find(r => r.id === id);
+
+    if (!restaurant) return;
+
+    const detailContainer = document.querySelector('#detail-container');
+    if (!detailContainer) return;
+
+    detailContainer.innerHTML = '';
+    const detail = new RestaurantDetail(restaurant);
+    detailContainer.appendChild(detail.getElement());
+  }
+
+  private hideDetail(): void {
+    const detailContainer = document.querySelector('#detail-container');
+    if (detailContainer) {
+      detailContainer.innerHTML = '';
+    }
   }
 
   private async requestLocation(): Promise<void> {
     try {
-      console.log('Requesting location...');
       const location = await getCurrentLocation();
       if (location) {
         this.userLocation = location;
-        console.log('Location obtained:', this.userLocation);
-      } else {
-        this.userLocation = undefined;
-        console.log('Location not available');
       }
-    } catch (error) {
-      console.error('Location error:', error);
+    } catch {
       this.userLocation = undefined;
     }
   }

@@ -2,11 +2,17 @@
 import './style.css';
 import { GlutenFreeFinderApp } from './app';
 
-console.log('Main script loading...');
+// Register service worker
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(() => {
+      // Service worker registration failed - app works without it
+    });
+  });
+}
 
-// Initialize the app when DOM is loaded
+// Initialize app
 function initApp() {
-  console.log('Initializing app...');
   new GlutenFreeFinderApp();
 }
 

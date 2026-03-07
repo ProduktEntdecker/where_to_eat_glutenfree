@@ -1,25 +1,30 @@
 export class EmptyState {
   private container: HTMLElement;
 
-  constructor() {
+  constructor(
+    private message = 'Keine Restaurants gefunden',
+    private subMessage = 'Versuche einen anderen Suchbegriff oder Standort'
+  ) {
     this.container = this.createElement();
   }
 
   private createElement(): HTMLElement {
     const container = document.createElement('div');
-    container.className = 'flex flex-col items-center justify-center py-12 text-center';
+    container.className = 'flex flex-col items-center justify-center py-16 text-center px-8 fade-in';
     container.innerHTML = `
-      <svg class="w-16 h-16 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
-      </svg>
-      <h3 class="text-lg font-medium text-gray-900 mb-2">No restaurants found</h3>
-      <p class="text-gray-500">Try adjusting your search or location</p>
+      <div class="w-16 h-16 rounded-full flex items-center justify-center mb-4" style="background: var(--ios-gray5);">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--ios-gray2)" stroke-width="1.5">
+          <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
+          <circle cx="12" cy="9" r="2.5"/>
+        </svg>
+      </div>
+      <h3 class="text-lg font-semibold text-black mb-1">${this.message}</h3>
+      <p class="text-sm" style="color: var(--ios-gray);">${this.subMessage}</p>
     `;
     return container;
   }
 
-  public render(): HTMLElement {
+  render(): HTMLElement {
     return this.container;
   }
 }
