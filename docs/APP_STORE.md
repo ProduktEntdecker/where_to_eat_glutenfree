@@ -51,8 +51,10 @@ In Xcode:
 
 ### 4. App Store Connect metadata
 
-- **Screenshots**: at minimum 6.7" iPhone screenshots (take them in the
-  simulator: `Cmd+S`).
+- **Screenshots**: Apple requires one set for the 6.9" display class
+  (1320×2868 px portrait) or alternatively 6.5"; smaller sizes are optional and
+  scaled automatically. Take them in the simulator (`Cmd+S`) and check the
+  exact sizes required for your setup in App Store Connect's Media Manager.
 - **Description / keywords / support URL**: support URL can point to the
   GitHub repo or a simple landing page.
 - **Privacy policy URL**: required because the app accesses location. Host a
@@ -81,5 +83,6 @@ In Xcode:
 npm run ios:sync   # rebuild web assets and copy into the iOS project
 ```
 
-Then archive/upload from Xcode as above. Bump `MARKETING_VERSION` /
-`CURRENT_PROJECT_VERSION` in Xcode for each new submission.
+Then archive/upload from Xcode as above. For each new submission bump the
+version in Xcode: `MARKETING_VERSION` under Target → General (Version field),
+`CURRENT_PROJECT_VERSION` (Build) there too or via Target → Build Settings.
