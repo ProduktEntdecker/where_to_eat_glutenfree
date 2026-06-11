@@ -2,7 +2,7 @@ export class SearchBar {
   private container: HTMLElement;
   private searchInput!: HTMLInputElement;
   private onSearch: (query: string) => void;
-  private debounceTimer: number | null = null;
+  private debounceTimer: ReturnType<typeof setTimeout> | null = null;
 
   constructor(onSearchCallback: (query: string) => void) {
     this.onSearch = onSearchCallback;

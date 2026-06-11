@@ -54,40 +54,11 @@ function calculateDistance(
   return R * c;
 }
 
-async function searchGooglePlaces(
-  location: { lat: number; lng: number },
-  keyword: string = ''
-): Promise<any[]> {
-  const baseUrl = 'https://maps.googleapis.com/maps/api/place/nearbysearch/json';
-  
-  // Build search query focusing on gluten-free restaurants
-  const searchQuery = keyword 
-    ? `${keyword} gluten free restaurant`
-    : 'gluten free restaurant';
-  
-  const params = new URLSearchParams({
-    key: GOOGLE_API_KEY,
-    location: `${location.lat},${location.lng}`,
-    radius: SEARCH_RADIUS.toString(),
-    keyword: searchQuery,
-    type: 'restaurant'
-  });
-
-  try {
-    // Note: Direct API calls from browser will face CORS issues
-    // In production, you'd need a backend proxy or use Google's JS SDK
-    const response = await fetch(`${baseUrl}?${params}`);
-    const data = await response.json();
-    
-    if (data.status === 'OK') {
-      return data.results;
-    } else {
-      console.error('Google Places API error:', data.status);
-      return [];
-    }
-  } catch (error) {
-    console.error('Failed to fetch from Google Places:', error);
-    return [];
+// Google Maps JS SDK is loaded via script tag when configured; typed loosely
+// to avoid requiring @types/google.maps for an optional integration.
+declare global {
+  interface Window {
+    google?: any;
   }
 }
 
@@ -101,21 +72,23 @@ async function searchWithGooglePlacesSDK(
     return mockRestaurants;
   }
 
+  const googleMaps = window.google.maps;
+
   return new Promise((resolve) => {
-    const service = new google.maps.places.PlacesService(
+    const service = new googleMaps.places.PlacesService(
       document.createElement('div')
     );
 
     const request = {
-      location: new google.maps.LatLng(location.lat, location.lng),
+      location: new googleMaps.LatLng(location.lat, location.lng),
       radius: SEARCH_RADIUS,
       type: 'restaurant',
       keyword: keyword ? `${keyword} gluten free` : 'gluten free'
     };
 
-    service.nearbySearch(request, (results, status) => {
-      if (status === google.maps.places.PlacesServiceStatus.OK && results) {
-        const restaurants: Restaurant[] = results.map(place => ({
+    service.nearbySearch(request, (results: any[], status: string) => {
+      if (status === googleMaps.places.PlacesServiceStatus.OK && results) {
+        const restaurants: Restaurant[] = results.map((place: any) => ({
           id: place.place_id || '',
           name: place.name || '',
           address: place.vicinity || '',
@@ -130,7 +103,7 @@ async function searchWithGooglePlacesSDK(
           glutenFreeOptions: ['Check with restaurant for GF options'],
           phone: place.formatted_phone_number,
           website: place.website,
-          photos: place.photos?.map(photo => photo.getUrl({ maxWidth: 400 }))
+          photos: place.photos?.map((photo: any) => photo.getUrl({ maxWidth: 400 }))
         }));
         
         resolve(restaurants);
