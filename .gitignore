@@ -1,6 +1,25 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Editor / OS
+.DS_Store
+.vscode/
+.idea/
+
 # gemini-cli settings
 .gemini/
 
 # GitHub App credentials
 gha-creds-*.json
+
+# Secrets
 .env
+.env.*
+!.env.example
