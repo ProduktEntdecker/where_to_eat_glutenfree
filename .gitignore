@@ -4,3 +4,14 @@
 # GitHub App credentials
 gha-creds-*.json
 .env
+
+# Dependencies (platform-specific binaries must not be committed)
+node_modules/
+
+# iOS build artifacts
+ios/App/build/
+ios/App/Pods/
+ios/App/output/
+ios/App/App/public/
+ios/App/App/capacitor.config.json
+ios/DerivedData/

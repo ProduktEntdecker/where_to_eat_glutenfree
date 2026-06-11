@@ -57,6 +57,11 @@ export class GlutenFreeFinderApp {
           <div id="content-container" class="p-4">
             <!-- Results will be rendered here -->
           </div>
+
+          <!-- Data attribution (required by OpenStreetMap's ODbL license) -->
+          <footer class="px-4 pb-4 text-center text-xs text-gray-400">
+            Restaurant data © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener" class="underline">OpenStreetMap</a> contributors
+          </footer>
         </div>
       </div>
     `;
